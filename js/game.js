@@ -54,6 +54,10 @@ export class Game {
 
         // Input handler.
         this.inputs = new InputHandler(this.ship, this);
+
+        // Other components to initialize.
+        this.canvas = document.getElementById("plateau");
+        this.ctx = this.canvas.getContext("2d");
     }
 
     /**
@@ -76,13 +80,6 @@ export class Game {
             // Adds an event listener of type ended to every music in order to restart the song when completed.
             music.addEventListener('ended', function() { this.currentTime = 0; this.play(); }, false);
         })
-
-        // Initialize the input handler.
-        this.inputs = new InputHandler(this.ship, this);
-
-        // Other components to initialize.
-        this.canvas = document.getElementById("plateau");
-        this.ctx = this.canvas.getContext("2d");
 
         this.update();
 
