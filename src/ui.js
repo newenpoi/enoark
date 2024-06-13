@@ -16,6 +16,9 @@ export class UserInterface {
     }
 
     draw() {
+
+        // Cleaning up a portion of the canvas (x, y, width, height).
+        this.game.ctx.clearRect(0, 0, this.game.canvas.width, 32);
         
         // Interface rectangle.
         DrawingUtils.draw_rectangle(this.game.ctx, 0, 0, this.game.width, 32, '#18226a');

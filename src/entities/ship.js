@@ -44,7 +44,7 @@ export class Ship {
 
     draw() {
         // Cleaning up a portion of the canvas (x, y, width, height).
-        this.game.ctx.clearRect(0, 0, this.game.canvas.width, this.game.canvas.height);
+        this.game.ctx.clearRect(0, this.game.canvas.height - 32, this.game.canvas.width, 32);
         
         // Drawing the ship in the canvas.
         this.game.ctx.drawImage(this.img, this.x, this.y, 16, 16);
