@@ -1,7 +1,7 @@
 import { InputHandler } from './input-handler.js';
 import { sounds, musics, images } from './resources.js';
 import { Ship } from './entities/ship.js';
-import { UserInterface } from './entities/ui.js';
+import { UserInterface } from './ui.js';
 
 /**
  * Class that handles the main game instructions.
