@@ -42,4 +42,12 @@ export class Ship {
         this.x += direction * this.speed;
     }
 
+    draw() {
+        // Cleaning up a portion of the canvas (x, y, width, height).
+        this.game.ctx.clearRect(0, 0, this.game.canvas.width, this.game.canvas.height);
+        
+        // Drawing the ship in the canvas.
+        this.game.ctx.drawImage(this.img, this.x, this.y, 16, 16);
+    }
+
 }

@@ -1,6 +1,7 @@
 import { InputHandler } from './input-handler.js';
 import { sounds, musics, images } from './resources.js';
 import { Ship } from './entities/ship.js';
+import { UserInterface } from './entities/ui.js';
 
 /**
  * Class that handles the main game instructions.
@@ -13,8 +14,9 @@ export class Game {
         this.running = true;
         this.music = true;
 
-        // Identifier for the canvas.
-        this.plateau = document.getElementById("plateau");
+        // Other components to initialize.
+        this.canvas = document.getElementById("plateau");
+        this.ctx = this.canvas.getContext("2d");
 
         // Previous frame timestamp.
         this.lastFrame = 0;
@@ -34,8 +36,8 @@ export class Game {
         this.bonuses = [];
         
         // Width and height of the canvas.
-        this.width = this.plateau.width;
-        this.height = this.plateau.height;
+        this.width = this.canvas.width;
+        this.height = this.canvas.height;
 
         // Other properties like game level (the higher the harder), lives remaining, and ship score.
         this.level = 1;
@@ -55,9 +57,8 @@ export class Game {
         // Input handler.
         this.inputs = new InputHandler(this.ship, this);
 
-        // Other components to initialize.
-        this.canvas = document.getElementById("plateau");
-        this.ctx = this.canvas.getContext("2d");
+        // Holds the user interface.
+        this.ui = new UserInterface(this);
     }
 
     /**
@@ -101,18 +102,24 @@ export class Game {
         else if (timestamp - this.lastFrame < 60) frameMove = false;
         else this.lastFrame = timestamp;
 
+        // Call drawing function.
         if (frameMove) this.draw();
 
         if (this.ship.direction.left) this.ship.update(-1);
         if (this.ship.direction.right) this.ship.update(+1);
+
+        // Updates the user interface.
+        this.ui.update();
     }
 
+    /**
+     * We use the draw() function from the entities instead of the game.
+     */
     draw() {
-        // Cleaning up a portion of the canvas (x, y, width, height).
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        
-        // Drawing the ship in the canvas.
-        this.ctx.drawImage(this.ship.img, this.ship.x, this.ship.y, 16, 16);
+        // TODO :
+        // The use of an entity array.
+        this.ship.draw();
+        this.ui.draw();
     }
 
     /**
