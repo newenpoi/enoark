@@ -1,6 +1,7 @@
 import { InputHandler } from './input-handler.js';
 import { sounds, musics, images } from './resources.js';
 import { Ship } from './entities/ship.js';
+import { Alien } from './entities/alien.js';
 import { UserInterface } from './ui.js';
 
 /**
@@ -38,6 +39,10 @@ export class Game {
         // Width and height of the canvas.
         this.width = this.canvas.width;
         this.height = this.canvas.height;
+
+        // Map parameters (we will create a map class in the future).
+        this.columns = this.width / (16 * 2);
+        this.rows = 2;
 
         // Other properties like game level (the higher the harder), lives remaining, and ship score.
         this.level = 1;
@@ -80,7 +85,10 @@ export class Game {
             
             // Adds an event listener of type ended to every music in order to restart the song when completed.
             music.addEventListener('ended', function() { this.currentTime = 0; this.play(); }, false);
-        })
+        });
+
+        // This function is used to place the aliens on the map.
+        this.positioning();
 
         this.update();
 
@@ -91,9 +99,9 @@ export class Game {
         if (!this.running) return;
 
         // Requests a frame for the update logic.
-        requestAnimationFrame(() => this.update(timestamp));
+        requestAnimationFrame(timestamp => this.update(timestamp));
 
-        var frameMove = true;
+        let frameMove = true;
         
         // If no last frame is present, the last frame is the current timestamp.
         // Else if the timestamp minus the last frame is lower than 60 the frameMove (for updating and drawing) is set to false.
@@ -108,17 +116,28 @@ export class Game {
         if (this.ship.direction.left) this.ship.update(-1);
         if (this.ship.direction.right) this.ship.update(+1);
 
+        // Updates the aliens.
+        this.aliens.forEach(alien => alien.update());
+
         // Updates the user interface.
         this.ui.update();
     }
 
-    /**
-     * We use the draw() function from the entities instead of the game.
-     */
     draw() {
-        // TODO :
-        // The use of an entity array.
-        this.ship.draw();
+        // Cleaning up a portion of the canvas (x, y, width, height) for the ship.
+        this.ctx.clearRect(0, this.canvas.height - 32, this.canvas.width, 32);
+        
+        // Drawing the ship in the canvas.
+        this.ctx.drawImage(this.ship.img, this.ship.x, this.ship.y, 16, 16);
+
+        // Clearing and drawing the aliens.
+        this.aliens.forEach(alien => {
+            // Assume alien has an x, y, width, height
+            this.ctx.clearRect(alien.x, alien.y, 16, 16);
+            this.ctx.drawImage(alien.img, ((alien.frame) * 16), 0, 16, 16, alien.x, alien.y, 16, 16);
+        });
+
+        // Draws the user interface.
         this.ui.draw();
     }
 
@@ -127,4 +146,29 @@ export class Game {
      * The game loop will check for the running variable.
      */
     pause() { this.running = !this.running; console.log(`The game is ${this.running ? "resumed" : "paused"}.`); }
+
+    /**
+     * Builds the array of aliens and positions them in the map.
+     * Each of them are positioned given a number of rows and columns from the map.
+     */
+    positioning() {
+        let k = 0;
+	
+        // Dual loop to fill the map.
+        // Where 16 is the alien width AND height.
+        for (let i = 0; i < this.rows; i++)
+        {
+            for (let j = 0; j < this.columns; j++)
+            {
+                // Aliens are positioned so they don't overlap each other.
+                let new_x = (16 * 2 * j) + 8;
+                let new_y = (16 + 16 * 2 * i);
+                
+                // Creates a new alien entity in the array.
+                this.aliens[k++] = new Alien({img: this.images.alien, frame: Math.round(Math.random(), 0), x: new_x, y: new_y});
+            }
+        }
+
+        console.log(`There are ${this.columns} enemy entities spawned on each row.`);
+    }
 }

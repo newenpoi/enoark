@@ -2,6 +2,8 @@ import { DrawingUtils } from '../utils/drawing-utils.js';
 
 /**
  * Class to create and provide a user interface.
+ * Since this could be a Singleton class we could leave the drawing method here.
+ * @Drawable
  */
 export class UserInterface {
     

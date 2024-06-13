@@ -1,5 +1,6 @@
 /**
  * Class to create and provide a default ship.
+ * @Drawable
  */
 export class Ship {
 	
@@ -24,6 +25,8 @@ export class Ship {
     /**
      * Updates the position given the direction (left or right).
      * 
+     * TODO : Fix the stuck bug when touching borders.
+     * 
      * Where 16 is the resolution of the ship.
      * @param {direction} direction 
      */
@@ -42,6 +45,7 @@ export class Ship {
         this.x += direction * this.speed;
     }
 
+    /*
     draw() {
         // Cleaning up a portion of the canvas (x, y, width, height).
         this.game.ctx.clearRect(0, this.game.canvas.height - 32, this.game.canvas.width, 32);
@@ -49,5 +53,5 @@ export class Ship {
         // Drawing the ship in the canvas.
         this.game.ctx.drawImage(this.img, this.x, this.y, 16, 16);
     }
-
+    */
 }
