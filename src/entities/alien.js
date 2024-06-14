@@ -9,14 +9,27 @@ export class Alien {
         this.frame = config.frame || Math.round(Math.random(), 0);
         this.x = config.x || 0;
         this.y = config.y || 0;
+        this.speed = config.speed || 25;
+
+        this.lastFrame = null;
     }
 
-    update() {
-        // Adjusting to a random frame for animation.
-        this.frame = (this.frame + 1) % 2;
-        
+    update(delta, timestamp) {
+
         // Adjusting the position.
-        this.y += 0.1;
+        this.y += (this.speed * delta);
+
+        let animate = true;
+
+        if (!this.lastFrame)
+            this.lastFrame = timestamp;
+        else if (timestamp - this.lastFrame < 60)
+            animate = false;
+        else
+            this.lastFrame = timestamp;
+
+        // Adjusting to a random frame for animation.
+        if (animate) this.frame = (this.frame + 1) % 2;
         
         // if (this.x <= 0) this.x = 0;
         

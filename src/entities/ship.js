@@ -14,7 +14,7 @@ export class Ship {
         this.frame = config.frame || 0;
         this.x = config.x || 0;
         this.y = config.y || 0;
-        this.speed = config.speed || 1.5;
+        this.speed = config.speed || 150;
         this.direction = config.direction || { left: false, right: false };
         this.weapon = config.weapon || { type: 0, speed: 4, delay: 128 };
         this.shooting = config.shooting || false;
@@ -28,9 +28,8 @@ export class Ship {
      * TODO : Fix the stuck bug when touching borders.
      * 
      * Where 16 is the resolution of the ship.
-     * @param {direction} direction 
      */
-    update(direction) {
+    update(delta) {
 
         // OK.
         // console.log(`Moving ${(direction < 0) ? 'left' : 'right'} !`);
@@ -42,7 +41,8 @@ export class Ship {
         if (this.x + 16 >= this.game.width) direction = 0;
         
         // Moves left (direction is negative) or right (positive).
-        this.x += direction * this.speed;
+        if (this.direction.left) this.x -= (this.speed * delta);
+        if (this.direction.right) this.x += (this.speed * delta);
     }
 
     /*

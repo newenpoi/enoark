@@ -57,7 +57,7 @@ export class Game {
         this.images = images;
 
         // The player ship.
-        this.ship = new Ship({img: this.images.ship, frame: 0, x: this.width / 2, y: (this.height - 16) - 8, speed: 1.5, direction: {left: false, right: false}, weapon: {type: 0, speed: 4, delay: 128}, shooting: false }, this);
+        this.ship = new Ship({img: this.images.ship, frame: 0, x: this.width / 2, y: (this.height - 16) - 8, speed: 150, direction: {left: false, right: false}, weapon: {type: 0, speed: 4, delay: 128}, shooting: false }, this);
 
         // Input handler.
         this.inputs = new InputHandler(this.ship, this);
@@ -90,37 +90,36 @@ export class Game {
         // This function is used to place the aliens on the map.
         this.positioning();
 
-        this.update();
-
         console.log("The game is ready.");
+
+        // Will be started only with a user interaction in the future.
+        this.start();
     }
+
+    start() { requestAnimationFrame(this.update.bind(this)); }
 
     update(timestamp) {
         if (!this.running) return;
 
         // Requests a frame for the update logic.
-        requestAnimationFrame(timestamp => this.update(timestamp));
+        // requestAnimationFrame(timestamp => this.update(timestamp));
 
-        let frameMove = true;
-        
-        // If no last frame is present, the last frame is the current timestamp.
-        // Else if the timestamp minus the last frame is lower than 60 the frameMove (for updating and drawing) is set to false.
-        // Otherwise the lastframe is updated with the timestamp and the frame move is allowed.
-        if (!this.lastFrame) this.lastFrame = timestamp;
-        else if (timestamp - this.lastFrame < 60) frameMove = false;
-        else this.lastFrame = timestamp;
+        let delta = (timestamp - this.lastFrame) / 1000;
+        this.lastFrame = timestamp;
 
-        // Call drawing function.
-        if (frameMove) this.draw();
-
-        if (this.ship.direction.left) this.ship.update(-1);
-        if (this.ship.direction.right) this.ship.update(+1);
+        // Updating the ship.
+        this.ship.update(delta);
 
         // Updates the aliens.
-        this.aliens.forEach(alien => alien.update());
+        this.aliens.forEach(alien => alien.update(delta, timestamp));
 
         // Updates the user interface.
         this.ui.update();
+
+        // Call drawing function.
+        this.draw();
+
+        requestAnimationFrame(this.update.bind(this));
     }
 
     draw() {
@@ -130,10 +129,10 @@ export class Game {
         // Drawing the ship in the canvas.
         this.ctx.drawImage(this.ship.img, this.ship.x, this.ship.y, 16, 16);
 
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height - 32);
+
         // Clearing and drawing the aliens.
         this.aliens.forEach(alien => {
-            // Assume alien has an x, y, width, height
-            this.ctx.clearRect(alien.x, alien.y, 16, 16);
             this.ctx.drawImage(alien.img, ((alien.frame) * 16), 0, 16, 16, alien.x, alien.y, 16, 16);
         });
 
@@ -165,7 +164,7 @@ export class Game {
                 let new_y = (16 + 16 * 2 * i);
                 
                 // Creates a new alien entity in the array.
-                this.aliens[k++] = new Alien({img: this.images.alien, frame: Math.round(Math.random(), 0), x: new_x, y: new_y});
+                this.aliens[k++] = new Alien({img: this.images.alien, frame: Math.round(Math.random(), 0), x: new_x, y: new_y, speed: 25});
             }
         }
 
