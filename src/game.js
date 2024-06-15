@@ -3,6 +3,7 @@ import { sounds, musics, images } from './resources.js';
 import { Ship } from './entities/ship.js';
 import { Alien } from './entities/alien.js';
 import { UserInterface } from './ui.js';
+import { MathUtils } from './utils/math-utils.js';
 
 /**
  * Class that handles the main game instructions.
@@ -101,9 +102,6 @@ export class Game {
     update(timestamp) {
         if (!this.running) return;
 
-        // Requests a frame for the update logic.
-        // requestAnimationFrame(timestamp => this.update(timestamp));
-
         let delta = (timestamp - this.lastFrame) / 1000;
         this.lastFrame = timestamp;
 
@@ -129,14 +127,13 @@ export class Game {
         // Drawing the ship in the canvas.
         this.ctx.drawImage(this.ship.img, this.ship.x, this.ship.y, 16, 16);
 
+        // Clearing for the aliens.
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height - 32);
 
-        // Clearing and drawing the aliens.
-        this.aliens.forEach(alien => {
-            this.ctx.drawImage(alien.img, ((alien.frame) * 16), 0, 16, 16, alien.x, alien.y, 16, 16);
-        });
+        // Drawing the aliens.
+        this.aliens.forEach(alien => { this.ctx.drawImage(alien.img, ((alien.frame) * 16), 0, 16, 16, alien.x, alien.y, 16, 16); });
 
-        // Draws the user interface.
+        // Draws the user interface (holds another clearRect).
         this.ui.draw();
     }
 
@@ -157,14 +154,14 @@ export class Game {
         // Where 16 is the alien width AND height.
         for (let i = 0; i < this.rows; i++)
         {
-            for (let j = 0; j < this.columns; j++)
+            for (let j = 1; j < this.columns - 1; j++)
             {
                 // Aliens are positioned so they don't overlap each other.
                 let new_x = (16 * 2 * j) + 8;
                 let new_y = (16 + 16 * 2 * i);
                 
                 // Creates a new alien entity in the array.
-                this.aliens[k++] = new Alien({img: this.images.alien, frame: Math.round(Math.random(), 0), x: new_x, y: new_y, speed: 25});
+                this.aliens[k++] = new Alien({img: this.images.alien, frame: Math.round(Math.random(), 0), x: new_x, y: new_y, speed: MathUtils.random(25, 40)});
             }
         }
 

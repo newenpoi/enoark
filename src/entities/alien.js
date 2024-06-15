@@ -11,25 +11,31 @@ export class Alien {
         this.y = config.y || 0;
         this.speed = config.speed || 25;
 
-        this.lastFrame = null;
+        // Frame duration in ms.
+        this.frameDuration = 120;
+
+        this.lastFrame = 0;
+        this.frame = 0;
     }
 
+    /**
+     * Decoupling the animation speed from the frame rate, ensuring that each frame is displayed for exactly the duration intended, regardless of how long each frame takes to render.
+     * @param {*} delta 
+     * @param {*} timestamp 
+     */
     update(delta, timestamp) {
 
         // Adjusting the position.
         this.y += (this.speed * delta);
 
-        let animate = true;
-
-        if (!this.lastFrame)
+        // When the lastFrame subtracted from the timestamp is above our fixed frame duration for the alien.
+        if (timestamp - this.lastFrame >= this.frameDuration) {
+            // Swaps between frames (animation effect).
+            this.frame = (this.frame + 1) % 2;
+            
+            // Determine the last frame with the given timestamp.
             this.lastFrame = timestamp;
-        else if (timestamp - this.lastFrame < 60)
-            animate = false;
-        else
-            this.lastFrame = timestamp;
-
-        // Adjusting to a random frame for animation.
-        if (animate) this.frame = (this.frame + 1) % 2;
+        }
         
         // if (this.x <= 0) this.x = 0;
         
