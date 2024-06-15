@@ -45,8 +45,8 @@ export class InputHandler {
         else this.ship.direction.right = false;
 
         // Space (Fire).
-        if (this.keyStates[32]) this.ship.firing = true;
-        else this.ship.firing = false;
+        if (this.keyStates[32]) this.ship.shooting = true;
+        else this.ship.shooting = false;
 
         // P (Pause).
         if (this.keyStates[80]) this.game.pause();

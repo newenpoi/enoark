@@ -19,9 +19,14 @@ export class Ship {
         this.weapon = config.weapon || { type: 0, speed: 4, delay: 128 };
         this.shooting = config.shooting || false;
         
-        this.firing = false;
         this.projectiles = [];
         this.game = game;
+
+        // Frame duration in ms.
+        this.frameDuration = 120;
+
+        this.lastFrame = 0;
+        this.frame = 0;
     }
 
     /**
@@ -31,7 +36,7 @@ export class Ship {
      * 
      * Where 16 is the resolution of the ship.
      */
-    update(delta) {
+    update(delta, timestamp) {
 
         // OK.
         // console.log(`Moving ${(direction < 0) ? 'left' : 'right'} !`);
@@ -46,25 +51,23 @@ export class Ship {
         if (this.direction.left) this.x -= (this.speed * delta);
         if (this.direction.right) this.x += (this.speed * delta);
 
-        if (this.firing) this.shoot();
+        if (this.shooting) this.shoot(timestamp);
     }
 
-    shoot() {
-        console.log("Call to function shoot()...");
+    shoot(timestamp) {
 
-        if (this.shooting) return;
-        this.shooting = true;
-
-        this.projectiles.push({
-            x: (this.x + 16 / 2),
-            y: this.y,
-            ammo: this.weapon.type,
-            collision: false
-        });
-
-        console.log(this.projectiles.length);
-        
-        if (this.weapon.type == 0) setTimeout(function() {this.shooting = false; console.log("Its false."); }, this.weapon.delay);
-        else setTimeout(function() {this.shooting = false;}, 64);
+        // Calculation of projectile frequency using frame rate.
+        // Note that projectiles should be an entity of its own, and drawable.
+        if (timestamp - this.lastFrame >= this.frameDuration) {
+            this.projectiles.push({
+                x: (this.x + 16 / 2),
+                y: this.y,
+                ammo: this.weapon.type,
+                collision: false
+            });
+            
+            // Determine the last frame with the given timestamp.
+            this.lastFrame = timestamp;
+        }
     }
 }

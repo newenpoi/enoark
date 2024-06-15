@@ -107,7 +107,7 @@ export class Game {
         this.lastFrame = timestamp;
 
         // Updating the ship.
-        this.ship.update(delta);
+        this.ship.update(delta, timestamp);
 
         // Updates the aliens.
         this.aliens.forEach(alien => alien.update(delta, timestamp));
@@ -118,6 +118,7 @@ export class Game {
         // Call drawing functions.
         this.draw_aliens();
         this.draw_ship();
+        this.draw_shoot();
 
         requestAnimationFrame(this.update.bind(this));
     }
@@ -144,12 +145,12 @@ export class Game {
     draw_shoot() {
         
         // Loops through the projectiles and displays them.
-        for (i = 0; i < this.ship.projectiles.length; i++)
+        for (let i = 0; i < this.ship.projectiles.length; i++)
         {
             // Photons.
             if (this.ship.projectiles[i].ammo == 0)
             {
-                DrawingUtils.draw_rectangle(this.ctx, this.ship.projectiles[i].x - 1, this.ship.projectiles[i].y - ship.weapon.speed, 2, 4, '#FFFFFF');
+                DrawingUtils.draw_rectangle(this.ctx, this.ship.projectiles[i].x - 1, this.ship.projectiles[i].y - this.ship.weapon.speed, 2, 4, '#FFFFFF');
                 
                 // Adjusting trajectory.
                 this.ship.projectiles[i].y -= this.ship.weapon.speed;
