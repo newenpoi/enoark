@@ -18,7 +18,9 @@ export class Ship {
         this.direction = config.direction || { left: false, right: false };
         this.weapon = config.weapon || { type: 0, speed: 4, delay: 128 };
         this.shooting = config.shooting || false;
-
+        
+        this.firing = false;
+        this.projectiles = [];
         this.game = game;
     }
 
@@ -35,23 +37,34 @@ export class Ship {
         // console.log(`Moving ${(direction < 0) ? 'left' : 'right'} !`);
 
         // Resets the position to the left if outbound.
-        if (this.x <= 0) direction = 0;
+        if (this.x <= 0) this.x = 0;
         
         // Resets the position to the right if outbound.
-        if (this.x + 16 >= this.game.width) direction = 0;
+        if (this.x + 16 >= this.game.width) this.x = (16 - 4);
         
         // Moves left (direction is negative) or right (positive).
         if (this.direction.left) this.x -= (this.speed * delta);
         if (this.direction.right) this.x += (this.speed * delta);
+
+        if (this.firing) this.shoot();
     }
 
-    /*
-    draw() {
-        // Cleaning up a portion of the canvas (x, y, width, height).
-        this.game.ctx.clearRect(0, this.game.canvas.height - 32, this.game.canvas.width, 32);
+    shoot() {
+        console.log("Call to function shoot()...");
+
+        if (this.shooting) return;
+        this.shooting = true;
+
+        this.projectiles.push({
+            x: (this.x + 16 / 2),
+            y: this.y,
+            ammo: this.weapon.type,
+            collision: false
+        });
+
+        console.log(this.projectiles.length);
         
-        // Drawing the ship in the canvas.
-        this.game.ctx.drawImage(this.img, this.x, this.y, 16, 16);
+        if (this.weapon.type == 0) setTimeout(function() {this.shooting = false; console.log("Its false."); }, this.weapon.delay);
+        else setTimeout(function() {this.shooting = false;}, 64);
     }
-    */
 }

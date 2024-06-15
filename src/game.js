@@ -4,6 +4,7 @@ import { Ship } from './entities/ship.js';
 import { Alien } from './entities/alien.js';
 import { UserInterface } from './ui.js';
 import { MathUtils } from './utils/math-utils.js';
+import { DrawingUtils } from './utils/drawing-utils.js';
 
 /**
  * Class that handles the main game instructions.
@@ -114,19 +115,14 @@ export class Game {
         // Updates the user interface.
         this.ui.update();
 
-        // Call drawing function.
-        this.draw();
+        // Call drawing functions.
+        this.draw_aliens();
+        this.draw_ship();
 
         requestAnimationFrame(this.update.bind(this));
     }
 
-    draw() {
-        // Cleaning up a portion of the canvas (x, y, width, height) for the ship.
-        this.ctx.clearRect(0, this.canvas.height - 32, this.canvas.width, 32);
-        
-        // Drawing the ship in the canvas.
-        this.ctx.drawImage(this.ship.img, this.ship.x, this.ship.y, 16, 16);
-
+    draw_aliens() {
         // Clearing for the aliens.
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height - 32);
 
@@ -135,6 +131,36 @@ export class Game {
 
         // Draws the user interface (holds another clearRect).
         this.ui.draw();
+    }
+
+    draw_ship() {
+        // Cleaning up a portion of the canvas (x, y, width, height) for the ship.
+        this.ctx.clearRect(0, this.canvas.height - 32, this.canvas.width, 32);
+        
+        // Drawing the ship in the canvas.
+        this.ctx.drawImage(this.ship.img, this.ship.x, this.ship.y, 16, 16);
+    }
+
+    draw_shoot() {
+        
+        // Loops through the projectiles and displays them.
+        for (i = 0; i < this.ship.projectiles.length; i++)
+        {
+            // Photons.
+            if (this.ship.projectiles[i].ammo == 0)
+            {
+                DrawingUtils.draw_rectangle(this.ctx, this.ship.projectiles[i].x - 1, this.ship.projectiles[i].y - ship.weapon.speed, 2, 4, '#FFFFFF');
+                
+                // Adjusting trajectory.
+                this.ship.projectiles[i].y -= this.ship.weapon.speed;
+                
+                // If the projectile is out of range or made collision.
+                if (this.ship.projectiles[i].y <= 0 || this.ship.projectiles[i].collision) this.ship.projectiles.splice(i, 1);
+            }
+
+            // TODO :
+            // Other drawings given the weapon type.
+        }
     }
 
     /**
