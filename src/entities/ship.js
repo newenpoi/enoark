@@ -32,8 +32,6 @@ export class Ship {
     /**
      * Updates the position given the direction (left or right).
      * 
-     * TODO : Fix the stuck bug when touching borders.
-     * 
      * Where 16 is the resolution of the ship.
      */
     update(delta, timestamp) {
@@ -42,10 +40,10 @@ export class Ship {
         // console.log(`Moving ${(direction < 0) ? 'left' : 'right'} !`);
 
         // Resets the position to the left if outbound.
-        if (this.x <= 0) this.x = 0;
+        if (this.x <= 0) this.x = 0 + 16;
         
         // Resets the position to the right if outbound.
-        if (this.x + 16 >= this.game.width) this.x = (16 - 4);
+        if (this.x + 16 >= this.game.width) this.x = (this.game.width - 16 - 4);
         
         // Moves left (direction is negative) or right (positive).
         if (this.direction.left) this.x -= (this.speed * delta);
@@ -59,12 +57,17 @@ export class Ship {
         // Calculation of projectile frequency using frame rate.
         // Note that projectiles should be an entity of its own, and drawable.
         if (timestamp - this.lastFrame >= this.frameDuration) {
+            
             this.projectiles.push({
                 x: (this.x + 16 / 2),
                 y: this.y,
                 ammo: this.weapon.type,
                 collision: false
             });
+
+            // Plays the shoot sound.
+            this.game.sounds.shoot.play();
+            this.game.sounds.shoot.currentTime = 0;
             
             // Determine the last frame with the given timestamp.
             this.lastFrame = timestamp;

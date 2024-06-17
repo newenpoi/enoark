@@ -2,6 +2,7 @@ import { InputHandler } from './input-handler.js';
 import { sounds, musics, images } from './resources.js';
 import { Ship } from './entities/ship.js';
 import { Alien } from './entities/alien.js';
+import { Explosion } from './entities/explosion.js';
 import { UserInterface } from './ui.js';
 import { MathUtils } from './utils/math-utils.js';
 import { DrawingUtils } from './utils/drawing-utils.js';
@@ -119,13 +120,17 @@ export class Game {
         this.draw_aliens();
         this.draw_ship();
         this.draw_shoot();
+        this.draw_explosions(delta, timestamp);
+
+        // Checks for any collision from objects.
+        this.collision_check();
 
         requestAnimationFrame(this.update.bind(this));
     }
 
     draw_aliens() {
         // Clearing for the aliens.
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height - 32);
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
         // Drawing the aliens.
         this.aliens.forEach(alien => { this.ctx.drawImage(alien.img, ((alien.frame) * 16), 0, 16, 16, alien.x, alien.y, 16, 16); });
@@ -135,9 +140,6 @@ export class Game {
     }
 
     draw_ship() {
-        // Cleaning up a portion of the canvas (x, y, width, height) for the ship.
-        this.ctx.clearRect(0, this.canvas.height - 32, this.canvas.width, 32);
-        
         // Drawing the ship in the canvas.
         this.ctx.drawImage(this.ship.img, this.ship.x, this.ship.y, 16, 16);
     }
@@ -160,7 +162,66 @@ export class Game {
             }
 
             // TODO :
-            // Other drawings given the weapon type.
+            // Other drawings given the kind of ammo (a photon or a beam).
+            // Thing is... Something does not add up... It should be given the weapon being used.
+        }
+    }
+
+    draw_explosions(delta, timestamp) {
+        
+        // Iterate through each of the explosion and draw their image.
+        for (let i = 0; i < this.explosions.length; i++)
+        {
+            // Updates the explosion entity.
+            this.explosions[i].update(delta, timestamp);
+
+            this.ctx.drawImage(this.images.explosion, this.explosions[i].frame * 16, 0, 16, 16, this.explosions[i].x, this.explosions[i].y, 16, 16);
+
+            // Removes the explosion from the list if the last frame of the animation has been drawed.
+            if (this.explosions[i].frame >= 8) this.explosions.splice(i, 1);
+        }
+    }
+
+    collision_check() {
+        // For every projectile coming from the ship.
+        for (let i = 0; i < this.ship.projectiles.length; i++)
+        {
+            let tir_x = this.ship.projectiles[i].x;
+            let tir_y = this.ship.projectiles[i].y;
+            
+            // Loops through each aliens to check their position against the projectiles.
+            for (let j = 0; j < this.aliens.length; j++)
+            {
+                let alien_x = this.aliens[j].x;
+                let alien_y = this.aliens[j].y;
+                
+                let collision = false;
+                
+                // Blasted by a photon.
+                if (this.ship.projectiles[i].ammo == 0)
+                {
+                    // If there is collision with the photon.
+                    if (tir_x >= alien_x && tir_x <= alien_x + 16 && tir_y >= alien_y - 16 && tir_y <= alien_y + 16)
+                    {
+                        this.ship.projectiles[i].collision = true;
+                        collision = true;
+                    }
+                }
+                
+                // Whenever collision is true for any of the above (in case we add more weapon types).
+                if (collision)
+                {
+                    // Adding an explosion to the array and pressing the first frame of the explosion sprite.
+                    this.explosions.push(new Explosion({x: alien_x, y: alien_y}));
+                    
+                    // Plays the sound effect and immetiately sets the sound cursor back to zero.
+                    this.sounds.explode.play();
+                    this.sounds.explode.currentTime = 0;
+
+                    this.score += this.level;
+                    this.aliens.splice(j, 1);
+                }
+            }
         }
     }
 
@@ -185,7 +246,7 @@ export class Game {
             {
                 // Aliens are positioned so they don't overlap each other.
                 let new_x = (16 * 2 * j) + 8;
-                let new_y = (16 + 16 * 2 * i);
+                let new_y = -64 - (-32 * i);
                 
                 // Creates a new alien entity in the array.
                 this.aliens[k++] = new Alien({img: this.images.alien, frame: Math.round(Math.random(), 0), x: new_x, y: new_y, speed: MathUtils.random(25, 40)});
