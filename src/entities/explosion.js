@@ -1,6 +1,7 @@
 /**
  * Main class for explosion.
  * @Drawable
+ * @Animable
  */
 export class Explosion {
     

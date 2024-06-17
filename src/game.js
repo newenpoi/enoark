@@ -79,14 +79,30 @@ export class Game {
         console.log("The game is ready.");
 
         // Will be started only with a user interaction in the future.
-        this.start();
+        this.run();
     }
 
-    start() { requestAnimationFrame(this.update.bind(this)); }
+    /**
+     * Runs the game and performs update and render methods.
+     */
+    run() {
+        const loop = (timestamp) => {
+            // Breaks the recursive loop when the game is not running.
+            if (!this.running) return;
+            
+            // Update and draw methods.
+            this.update(timestamp);
+            this.draw();
+
+            // Recursive call of the loop.
+            requestAnimationFrame(loop);
+        };
+
+        requestAnimationFrame(loop);
+    }
 
     /**
      * Updates all game objects properly given a deterministic timestamp.
-     * /!\ I don't know... Maybe it's best we rebuild the start (run) method to call recursively update and draw...
      * @param {*} timestamp 
      * @returns 
      */
@@ -96,35 +112,32 @@ export class Game {
         let delta = (timestamp - this.lastFrame) / 1000;
         this.lastFrame = timestamp;
 
-        // Updating the ship.
+        // Updating game entities
         this.ship.update(delta, timestamp);
-
-        // Updates the aliens.
         this.aliens.forEach(alien => alien.update(delta, timestamp));
-
-        // Updates the user interface.
+        this.explosions.forEach(explosion => explosion.update(delta, timestamp));
         this.ui.update();
 
-        // Call drawing functions.
+        // Checking for collisions
+        this.collision_check();
+    }
+
+    /**
+     * Draws all entities.
+     */
+    draw() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        
         this.draw_aliens();
         this.draw_ship();
         this.draw_shoot();
-        this.draw_explosions(delta, timestamp);
-
-        // Checks for any collision from objects.
-        this.collision_check();
-
-        requestAnimationFrame(this.update.bind(this));
+        this.draw_explosions();
     }
 
     /**
      * Clears the whole field and draws the aliens.
-     * /!\ Maybe the clearing could be in a draw() method, where this method would call the other drawing methods (draw_aliens, draw_ship, ...).
      */
     draw_aliens() {
-        // Clearing for the aliens.
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
         // Drawing the aliens.
         this.aliens.forEach(alien => { this.ctx.drawImage(alien.img, ((alien.frame) * 16), 0, 16, 16, alien.x, alien.y, 16, 16); });
 
@@ -136,7 +149,6 @@ export class Game {
     /**
      * Draws the ship's line.
      * Since a clear is already performed in the draw_aliens() method, the drawing image performs correctly.
-     * /!\ Of course all the screen is cleared though, but it does not seems to cause any performance issue.
      */
     draw_ship() {
         // Drawing the ship in the canvas.
@@ -170,18 +182,14 @@ export class Game {
     /**
      * This function works a bit differently and takes both delta and timestamp (for animating purpose).
      * It draws any explosion effects from an entity that has been vaporized.
-     * /!\ It does updates and drawing combined.
      * @param {*} delta 
      * @param {*} timestamp 
      */
-    draw_explosions(delta, timestamp) {
+    draw_explosions() {
         
         // Iterate through each of the explosion and draw their image.
         for (let i = 0; i < this.explosions.length; i++)
         {
-            // Updates the explosion entity.
-            this.explosions[i].update(delta, timestamp);
-
             this.ctx.drawImage(this.resources.images.explosion, this.explosions[i].frame * 16, 0, 16, 16, this.explosions[i].x, this.explosions[i].y, 16, 16);
 
             // Removes the explosion from the list if the last frame of the animation has been drawed.
