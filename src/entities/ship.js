@@ -66,8 +66,8 @@ export class Ship {
             });
 
             // Plays the shoot sound.
-            this.game.sounds.shoot.play();
-            this.game.sounds.shoot.currentTime = 0;
+            this.game.resources.sounds.shoot.play();
+            this.game.resources.sounds.shoot.currentTime = 0;
             
             // Determine the last frame with the given timestamp.
             this.lastFrame = timestamp;

@@ -34,8 +34,7 @@ export class InputHandler {
     }
 
     processInput() {
-        console.log("Processing incoming input...");
-        
+
         // Q (Left).
         if (this.keyStates[81]) this.ship.direction.left = true;
         else this.ship.direction.left = false;

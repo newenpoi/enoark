@@ -1,5 +1,5 @@
 import { InputHandler } from './input-handler.js';
-import { sounds, musics, images } from './resources.js';
+import { ResourcesManager } from './resources-manager.js';
 import { Ship } from './entities/ship.js';
 import { Alien } from './entities/alien.js';
 import { Explosion } from './entities/explosion.js';
@@ -53,14 +53,10 @@ export class Game {
         this.score = 0;
 
         // We need these in a different file called resources.
-        this.sounds = sounds;
-        this.musics = musics;
-        
-        // Sprites.
-        this.images = images;
+        this.resources = new ResourcesManager();
 
         // The player ship.
-        this.ship = new Ship({img: this.images.ship, frame: 0, x: this.width / 2, y: (this.height - 16) - 8, speed: 150, direction: {left: false, right: false}, weapon: {type: 0, speed: 4, delay: 128}, shooting: false }, this);
+        this.ship = new Ship({img: this.resources.images.ship, frame: 0, x: this.width / 2, y: (this.height - 16) - 8, speed: 150, direction: {left: false, right: false}, weapon: {type: 0, speed: 4, delay: 128}, shooting: false }, this);
 
         // Input handler.
         this.inputs = new InputHandler(this.ship, this);
@@ -77,18 +73,8 @@ export class Game {
         // Initialize the input handler.
         this.inputs.initialize();
 
-        /*
-            Parameterize sounds and musics.
-        */
-
-        Object.values(this.sounds).forEach(sound => sound.volume = 0.2);
-
-        Object.values(this.musics).forEach(music => {
-            music.volume = 0.2;
-            
-            // Adds an event listener of type ended to every music in order to restart the song when completed.
-            music.addEventListener('ended', function() { this.currentTime = 0; this.play(); }, false);
-        });
+        // Parameterize sounds and musics.
+        this.resources.initialize();
 
         // This function is used to place the aliens on the map.
         this.positioning();
@@ -101,6 +87,12 @@ export class Game {
 
     start() { requestAnimationFrame(this.update.bind(this)); }
 
+    /**
+     * Updates all game objects properly given a deterministic timestamp.
+     * /!\ I don't know... Maybe it's best we rebuild the start (run) method to call recursively update and draw...
+     * @param {*} timestamp 
+     * @returns 
+     */
     update(timestamp) {
         if (!this.running) return;
 
@@ -128,6 +120,10 @@ export class Game {
         requestAnimationFrame(this.update.bind(this));
     }
 
+    /**
+     * Clears the whole field and draws the aliens.
+     * /!\ Maybe the clearing could be in a draw() method, where this method would call the other drawing methods (draw_aliens, draw_ship, ...).
+     */
     draw_aliens() {
         // Clearing for the aliens.
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -136,14 +132,25 @@ export class Game {
         this.aliens.forEach(alien => { this.ctx.drawImage(alien.img, ((alien.frame) * 16), 0, 16, 16, alien.x, alien.y, 16, 16); });
 
         // Draws the user interface (holds another clearRect).
+        // /!\ This is more a HUD than a UI and must still be drawn on top (and under the main menu when pressing pause that we have not coded yet).
         this.ui.draw();
     }
 
+    /**
+     * Draws the ship's line.
+     * Since a clear is already performed in the draw_aliens() method, the drawing image performs correctly.
+     * /!\ Of course all the screen is cleared though, but it does not seems to cause any performance issue.
+     */
     draw_ship() {
         // Drawing the ship in the canvas.
         this.ctx.drawImage(this.ship.img, this.ship.x, this.ship.y, 16, 16);
     }
 
+    /**
+     * This method should be dedicated to drawing projectiles on the map.
+     * /!\ Currently it only draw the projectiles from the player's ship.
+     * /!\ If the weapon is being swapped during drawing, and the new weapon has a different speed, it might affect projectiles, which is bad.
+     */
     draw_shoot() {
         
         // Loops through the projectiles and displays them.
@@ -160,13 +167,16 @@ export class Game {
                 // If the projectile is out of range or made collision.
                 if (this.ship.projectiles[i].y <= 0 || this.ship.projectiles[i].collision) this.ship.projectiles.splice(i, 1);
             }
-
-            // TODO :
-            // Other drawings given the kind of ammo (a photon or a beam).
-            // Thing is... Something does not add up... It should be given the weapon being used.
         }
     }
 
+    /**
+     * This function works a bit differently and takes both delta and timestamp (for animating purpose).
+     * It draws any explosion effects from an entity that has been vaporized.
+     * /!\ It does updates and drawing combined.
+     * @param {*} delta 
+     * @param {*} timestamp 
+     */
     draw_explosions(delta, timestamp) {
         
         // Iterate through each of the explosion and draw their image.
@@ -175,13 +185,16 @@ export class Game {
             // Updates the explosion entity.
             this.explosions[i].update(delta, timestamp);
 
-            this.ctx.drawImage(this.images.explosion, this.explosions[i].frame * 16, 0, 16, 16, this.explosions[i].x, this.explosions[i].y, 16, 16);
+            this.ctx.drawImage(this.resources.images.explosion, this.explosions[i].frame * 16, 0, 16, 16, this.explosions[i].x, this.explosions[i].y, 16, 16);
 
             // Removes the explosion from the list if the last frame of the animation has been drawed.
             if (this.explosions[i].frame >= 8) this.explosions.splice(i, 1);
         }
     }
 
+    /**
+     * Performs collision check for incoming projectiles.
+     */
     collision_check() {
         // For every projectile coming from the ship.
         for (let i = 0; i < this.ship.projectiles.length; i++)
@@ -203,7 +216,12 @@ export class Game {
                     // If there is collision with the photon.
                     if (tir_x >= alien_x && tir_x <= alien_x + 16 && tir_y >= alien_y - 16 && tir_y <= alien_y + 16)
                     {
+                        // If there is collision marks this projectile for deletion (splice) during drawing.
                         this.ship.projectiles[i].collision = true;
+                        
+                        // /!\ Cant splice there because otherwise projectiles[i].ammo will get undefined (ammo) at some point.
+                        // this.ship.projectiles.splice(i, 1);
+                        
                         collision = true;
                     }
                 }
@@ -215,8 +233,8 @@ export class Game {
                     this.explosions.push(new Explosion({x: alien_x, y: alien_y}));
                     
                     // Plays the sound effect and immetiately sets the sound cursor back to zero.
-                    this.sounds.explode.play();
-                    this.sounds.explode.currentTime = 0;
+                    this.resources.sounds.explode.play();
+                    this.resources.sounds.explode.currentTime = 0;
 
                     this.score += this.level;
                     this.aliens.splice(j, 1);
@@ -228,12 +246,15 @@ export class Game {
     /**
      * Pauses the game by freezing drawers.
      * The game loop will check for the running variable.
+     * TODO : Not being used yet.
      */
     pause() { this.running = !this.running; console.log(`The game is ${this.running ? "resumed" : "paused"}.`); }
 
     /**
      * Builds the array of aliens and positions them in the map.
      * Each of them are positioned given a number of rows and columns from the map.
+     * 
+     * /!\ The positioning should be done given the map currently bound to the level and we have not coded that yet.
      */
     positioning() {
         let k = 0;
@@ -249,7 +270,7 @@ export class Game {
                 let new_y = -64 - (-32 * i);
                 
                 // Creates a new alien entity in the array.
-                this.aliens[k++] = new Alien({img: this.images.alien, frame: Math.round(Math.random(), 0), x: new_x, y: new_y, speed: MathUtils.random(25, 40)});
+                this.aliens[k++] = new Alien({img: this.resources.images.alien, frame: Math.round(Math.random(), 0), x: new_x, y: new_y, speed: MathUtils.random(25, 40)});
             }
         }
 
