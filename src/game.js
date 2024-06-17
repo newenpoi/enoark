@@ -25,11 +25,6 @@ export class Game {
         // Previous frame timestamp.
         this.lastFrame = 0;
 
-        // The drawers will request the animation frames (using requestAnimationFrame).
-        // For example, drawers[0] for the aliens, drawers[1] for the ship and the ship projectiles, etc...
-        // Maybe we want to separate the ship and the projectiles in two distinct drawers.
-        this.drawers = [];
-
         // Holds alien object and their stats.
         this.aliens = [];
 
@@ -44,6 +39,7 @@ export class Game {
         this.height = this.canvas.height;
 
         // Map parameters (we will create a map class in the future).
+        // /!\ Managed by the map.
         this.columns = this.width / (16 * 2);
         this.rows = 2;
 
@@ -52,7 +48,7 @@ export class Game {
         this.lives = 3;
         this.score = 0;
 
-        // We need these in a different file called resources.
+        // Holds all static assets.
         this.resources = new ResourcesManager();
 
         // The player ship.
@@ -61,7 +57,8 @@ export class Game {
         // Input handler.
         this.inputs = new InputHandler(this.ship, this);
 
-        // Holds the user interface.
+        // Holds the HUD.
+        // TODO : Use HUD instead.
         this.ui = new UserInterface(this);
     }
 
