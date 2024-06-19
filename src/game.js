@@ -98,6 +98,7 @@ export class Game {
             requestAnimationFrame(loop);
         };
 
+        // The call it.
         requestAnimationFrame(loop);
     }
 

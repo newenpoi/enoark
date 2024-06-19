@@ -1,3 +1,5 @@
+import { Weapon } from './weapon.js';
+
 /**
  * Class to create and provide a default ship.
  * @Drawable
@@ -16,7 +18,7 @@ export class Ship {
         this.y = config.y || 0;
         this.speed = config.speed || 150;
         this.direction = config.direction || { left: false, right: false };
-        this.weapon = config.weapon || { type: 0, speed: 4, delay: 128 };
+        this.weapon = new Weapon(config.weapon) || new Weapon({ type: 0, speed: 4, delay: 128 });
         this.shooting = config.shooting || false;
         
         this.projectiles = [];

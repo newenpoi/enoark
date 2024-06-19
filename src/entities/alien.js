@@ -1,6 +1,7 @@
 /**
  * Class for the Alien entity.
  * @Drawable
+ * @Animable
  */
 export class Alien {
     
