@@ -127,7 +127,7 @@ export class Game {
     }
 
     /**
-     * Draws all entities.
+     * Draw all entities by calling their methods.
      */
     draw() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -142,15 +142,15 @@ export class Game {
     }
 
     /**
-     * Clears the whole field and draws the aliens.
+     * Draw the aliens.
      */
     draw_aliens() {
         // Drawing the aliens.
-        this.aliens.forEach(alien => { this.ctx.drawImage(alien.sprite, ((alien.frame) * 16), 0, 16, 16, alien.x, alien.y, 16, 16); });
+        this.aliens.forEach(alien => { this.ctx.drawImage(alien.sprite, ((alien.animation.frame) * 16), 0, 16, 16, alien.x, alien.y, 16, 16); });
     }
 
     /**
-     * Draws the ship's line.
+     * Draw the ship's line.
      * Since a clear is already performed in the draw_aliens() method, the drawing image performs correctly.
      */
     draw_ship() {
@@ -183,7 +183,6 @@ export class Game {
     }
 
     /**
-     * This function works a bit differently and takes both delta and timestamp (for animating purpose).
      * It draws any explosion effects from an entity that has been vaporized.
      * @param {*} delta 
      * @param {*} timestamp 
@@ -278,7 +277,7 @@ export class Game {
                 let new_y = -64 - (-32 * i);
                 
                 // Creates a new alien entity in the array.
-                this.aliens[k++] = new Alien({sprite: this.resources.images.alien, frame: Math.round(Math.random(), 0), x: new_x, y: new_y, speed: MathUtils.random(25, 40)});
+                this.aliens[k++] = new Alien({sprite: this.resources.images.alien, x: new_x, y: new_y, speed: MathUtils.random(25, 40)});
             }
         }
 
