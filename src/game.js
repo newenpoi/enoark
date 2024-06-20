@@ -53,7 +53,7 @@ export class Game {
         this.resources = new ResourcesManager();
 
         // The player ship.
-        this.ship = new Ship({img: this.resources.images.ship, frame: 0, x: this.width / 2, y: (this.height - 16) - 8, speed: 150, direction: {left: false, right: false}, weapon: {type: 0, speed: 4, delay: 128}, shooting: false }, this);
+        this.ship = new Ship({sprite: this.resources.images.ship, frame: 0, x: this.width / 2, y: (this.height - 16) - 8, speed: 150, direction: {left: false, right: false}, weapon: {type: 0, speed: 4, delay: 128}, shooting: false }, this);
 
         // Input handler.
         this.inputs = new InputHandler(this.ship, this);
@@ -278,7 +278,7 @@ export class Game {
                 let new_y = -64 - (-32 * i);
                 
                 // Creates a new alien entity in the array.
-                this.aliens[k++] = new Alien({img: this.resources.images.alien, frame: Math.round(Math.random(), 0), x: new_x, y: new_y, speed: MathUtils.random(25, 40)});
+                this.aliens[k++] = new Alien({sprite: this.resources.images.alien, frame: Math.round(Math.random(), 0), x: new_x, y: new_y, speed: MathUtils.random(25, 40)});
             }
         }
 

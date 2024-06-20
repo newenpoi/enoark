@@ -1,4 +1,5 @@
 import { Weapon } from './weapon.js';
+import { Projectile } from './projectile.js';
 
 /**
  * Class to create and provide a default ship.
@@ -12,23 +13,30 @@ export class Ship {
      * @param {Game} game 
      */
     constructor(config, game) {
+        
+        // Main reference of the game used to retrieve the boundaries of the screen.
+        this.game = game;
+        
         this.sprite = config.sprite || 'default-ship.png';
-        this.frame = config.frame || 0;
         this.x = config.x || 0;
         this.y = config.y || 0;
         this.speed = config.speed || 150;
+        
+        // Input being currently held.
         this.direction = config.direction || { left: false, right: false };
+
         this.weapon = new Weapon(config.weapon) || new Weapon({ type: 0, speed: 4, delay: 128 });
         this.shooting = config.shooting || false;
         
+        // A projectile array updated and rendered by the game loop.
         this.projectiles = [];
-        this.game = game;
 
-        // Frame duration in ms.
+        // Frame duration in ms and last frame stored.
         this.frameDuration = 120;
-
         this.lastFrame = 0;
-        this.frame = 0;
+
+        // Required for animation (not used yet) at which frame this entity starts animating if animable.
+        this.frame = config.frame || 0;
     }
 
     /**
@@ -60,14 +68,15 @@ export class Ship {
         // Note that projectiles should be an entity of its own, and drawable.
         if (timestamp - this.lastFrame >= this.frameDuration) {
             
-            this.projectiles.push({
+            this.projectiles.push(new Projectile({
                 x: (this.x + 16 / 2),
                 y: this.y,
                 ammo: this.weapon.type,
                 collision: false
-            });
+            }));
 
             // Plays the shoot sound.
+            // TODO : Should access static resources.
             this.game.resources.sounds.shoot.play();
             this.game.resources.sounds.shoot.currentTime = 0;
             

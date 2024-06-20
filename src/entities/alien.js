@@ -1,3 +1,5 @@
+import { Animation } from './animation.js';
+
 /**
  * Class for the Alien entity.
  * @Drawable
@@ -18,6 +20,9 @@ export class Alien {
 
         this.lastFrame = 0;
         this.frame = 0;
+
+        // Maybe something like :
+        this.animation = new Animation({entity: this, duration: this.frameDuration});
     }
 
     /**
