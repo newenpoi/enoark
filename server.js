@@ -1,3 +1,8 @@
+/**
+ * Use npm start at the root of this folder to start the application.
+ * You will need node beforehand though.
+*/
+
 const express = require('express');
 const path = require('path');
 const app = express();
