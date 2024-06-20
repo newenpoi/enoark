@@ -11,6 +11,7 @@ export class Alien {
         this.x = config.x || 0;
         this.y = config.y || 0;
         this.speed = config.speed || 25;
+        this.score = 1;
 
         // Frame duration in ms.
         this.frameDuration = 120;

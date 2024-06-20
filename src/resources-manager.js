@@ -1,5 +1,8 @@
 /**
  * Class to handle static resources.
+ * Ideally speaking, we should turn it into a static class.
+ * Ressources can be accessible anywhere.
+ * However, if it was a real game engine, we dont load every resources available!
  */
 export class ResourcesManager {
     

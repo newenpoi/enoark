@@ -3,6 +3,7 @@ import { ResourcesManager } from './resources-manager.js';
 import { Ship } from './entities/ship.js';
 import { Alien } from './entities/alien.js';
 import { Explosion } from './entities/explosion.js';
+import { HUD } from './hud.js';
 import { UserInterface } from './ui.js';
 import { MathUtils } from './utils/math-utils.js';
 import { DrawingUtils } from './utils/drawing-utils.js';
@@ -22,28 +23,28 @@ export class Game {
         this.canvas = document.getElementById("plateau");
         this.ctx = this.canvas.getContext("2d");
 
-        // Previous frame timestamp.
+        // Previous frame timestamp for game update loop.
         this.lastFrame = 0;
 
-        // Holds alien object and their stats.
+        // Holds alien object and their stats (map related).
         this.aliens = [];
 
-        // Explosion effects used in animation.
+        // Explosion effects used in animation (not related to a map).
         this.explosions = [];
 
-        // Bonuses that spawns from destroying enemy ships.
+        // Bonuses that spawns from destroying enemy ships (not related to a map).
         this.bonuses = [];
         
-        // Width and height of the canvas.
+        // Width and height of the canvas (~ like resolution of the game).
         this.width = this.canvas.width;
         this.height = this.canvas.height;
 
-        // Map parameters (we will create a map class in the future).
-        // /!\ Managed by the map.
+        // Map parameters (map related).
         this.columns = this.width / (16 * 2);
         this.rows = 2;
 
         // Other properties like game level (the higher the harder), lives remaining, and ship score.
+        // Should be associated to the HUD.
         this.level = 1;
         this.lives = 3;
         this.score = 0;
@@ -58,8 +59,10 @@ export class Game {
         this.inputs = new InputHandler(this.ship, this);
 
         // Holds the HUD.
-        // TODO : Use HUD instead.
-        this.ui = new UserInterface(this);
+        this.hud = new HUD(this);
+
+        // And the user interface (when pressing pause for now).
+        // Ideally speaking we want new game, load game, and save.
     }
 
     /**
@@ -117,7 +120,7 @@ export class Game {
         this.ship.update(delta, timestamp);
         this.aliens.forEach(alien => alien.update(delta, timestamp));
         this.explosions.forEach(explosion => explosion.update(delta, timestamp));
-        this.ui.update();
+        this.hud.update();
 
         // Checking for collisions
         this.collision_check();
@@ -133,6 +136,9 @@ export class Game {
         this.draw_ship();
         this.draw_shoot();
         this.draw_explosions();
+
+        // Draws the user interface (holds another clearRect).
+        this.hud.draw();
     }
 
     /**
@@ -141,10 +147,6 @@ export class Game {
     draw_aliens() {
         // Drawing the aliens.
         this.aliens.forEach(alien => { this.ctx.drawImage(alien.img, ((alien.frame) * 16), 0, 16, 16, alien.x, alien.y, 16, 16); });
-
-        // Draws the user interface (holds another clearRect).
-        // /!\ This is more a HUD than a UI and must still be drawn on top (and under the main menu when pressing pause that we have not coded yet).
-        this.ui.draw();
     }
 
     /**
@@ -242,7 +244,7 @@ export class Game {
                     this.resources.sounds.explode.play();
                     this.resources.sounds.explode.currentTime = 0;
 
-                    this.score += this.level;
+                    this.score += this.aliens[j].score;
                     this.aliens.splice(j, 1);
                 }
             }
