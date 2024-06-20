@@ -6,7 +6,7 @@
 export class Alien {
     
     constructor(config) {
-        this.img = config.img || 'default-alien.png';
+        this.sprite = config.sprite || 'default-alien.png';
         this.frame = config.frame || Math.round(Math.random(), 0);
         this.x = config.x || 0;
         this.y = config.y || 0;

@@ -146,7 +146,7 @@ export class Game {
      */
     draw_aliens() {
         // Drawing the aliens.
-        this.aliens.forEach(alien => { this.ctx.drawImage(alien.img, ((alien.frame) * 16), 0, 16, 16, alien.x, alien.y, 16, 16); });
+        this.aliens.forEach(alien => { this.ctx.drawImage(alien.sprite, ((alien.frame) * 16), 0, 16, 16, alien.x, alien.y, 16, 16); });
     }
 
     /**
@@ -155,7 +155,7 @@ export class Game {
      */
     draw_ship() {
         // Drawing the ship in the canvas.
-        this.ctx.drawImage(this.ship.img, this.ship.x, this.ship.y, 16, 16);
+        this.ctx.drawImage(this.ship.sprite, this.ship.x, this.ship.y, 16, 16);
     }
 
     /**

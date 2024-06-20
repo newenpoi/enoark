@@ -12,7 +12,7 @@ export class Ship {
      * @param {Game} game 
      */
     constructor(config, game) {
-        this.img = config.img || 'default-ship.png';
+        this.sprite = config.sprite || 'default-ship.png';
         this.frame = config.frame || 0;
         this.x = config.x || 0;
         this.y = config.y || 0;
