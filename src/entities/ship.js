@@ -25,7 +25,7 @@ export class Ship {
         // Input being currently held.
         this.direction = config.direction || { left: false, right: false };
 
-        this.weapon = new Weapon(config.weapon) || new Weapon({ type: 0, speed: 4, delay: 128 });
+        this.weapon = new Weapon(config.weapon) || new Weapon({ type: 0, speed: 4, delay: 128, damage: 10 });
         this.shooting = config.shooting || false;
         
         // A projectile array updated and rendered by the game loop.
@@ -58,6 +58,16 @@ export class Ship {
         // Moves left (direction is negative) or right (positive).
         if (this.direction.left) this.x -= (this.speed * delta);
         if (this.direction.right) this.x += (this.speed * delta);
+
+        // Updates the projectiles if any have been fired.
+        for (let i = 0; i < this.projectiles.length; i++) {
+            
+            // Adjusting trajectory.
+            this.projectiles[i].y -= this.weapon.speed;
+            
+            // If the projectile is out of range or made collision.
+            if (this.projectiles[i].y <= 0 || this.projectiles[i].collision) this.projectiles.splice(i, 1);
+        }
 
         if (this.shooting) this.shoot(timestamp);
     }

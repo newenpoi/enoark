@@ -7,5 +7,7 @@ export class Weapon {
         this.type = config.type;
         this.speed = config.speed;
         this.delay = config.delay;
+
+        this.damage = config.damage;
     }
 }

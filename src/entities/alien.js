@@ -12,6 +12,10 @@ export class Alien {
         this.x = config.x || 0;
         this.y = config.y || 0;
         this.speed = config.speed || 25;
+        
+        this.health = config.durability | 15;
+        this.durability = config.durability | 15;
+        
         this.frameDuration = 120;
         
         // Score when obliterating the alien.
@@ -32,6 +36,9 @@ export class Alien {
         this.y += (this.speed * delta);
 
         // Updating the animation.
+        // Now according to our current animation mechanism let's say the interval will change given the condition of the entity.
+        // The first thing I would think about is giving the animation object the health of the entity...
+        // We did already passed the concerned entity using this keyword though.
         this.animation.update(timestamp);
     }
 }

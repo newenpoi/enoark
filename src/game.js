@@ -54,7 +54,7 @@ export class Game {
         this.resources = new ResourcesManager();
 
         // The player ship.
-        this.ship = new Ship({sprite: this.resources.images.ship, frame: 0, x: this.width / 2, y: (this.height - 16) - 8, speed: 150, direction: {left: false, right: false}, weapon: {type: 0, speed: 4, delay: 128}, shooting: false }, this);
+        this.ship = new Ship({sprite: this.resources.images.ship, frame: 0, x: this.width / 2, y: (this.height - 16) - 8, speed: 150, direction: {left: false, right: false}, weapon: {type: 0, speed: 4, delay: 128, damage: 10}, shooting: false }, this);
 
         // Input handler.
         this.inputs = new InputHandler(this.ship, this);
@@ -172,13 +172,8 @@ export class Game {
             // Photons.
             if (this.ship.projectiles[i].ammo == 0)
             {
+                // Draws the projectile given the coordinates being periodically updated inside ship.
                 DrawingUtils.draw_rectangle(this.ctx, this.ship.projectiles[i].x - 1, this.ship.projectiles[i].y - this.ship.weapon.speed, 2, 4, '#FFFFFF');
-                
-                // Adjusting trajectory.
-                this.ship.projectiles[i].y -= this.ship.weapon.speed;
-                
-                // If the projectile is out of range or made collision.
-                if (this.ship.projectiles[i].y <= 0 || this.ship.projectiles[i].collision) this.ship.projectiles.splice(i, 1);
             }
         }
     }
@@ -204,11 +199,11 @@ export class Game {
      * Performs collision check for incoming projectiles.
      */
     collision_check() {
-        // For every projectile coming from the ship.
+        // For every projectiles coming from the ship.
         for (let i = 0; i < this.ship.projectiles.length; i++)
         {
-            let tir_x = this.ship.projectiles[i].x;
-            let tir_y = this.ship.projectiles[i].y;
+            let projectile_x = this.ship.projectiles[i].x;
+            let projectile_y = this.ship.projectiles[i].y;
             
             // Loops through each aliens to check their position against the projectiles.
             for (let j = 0; j < this.aliens.length; j++)
@@ -222,7 +217,7 @@ export class Game {
                 if (this.ship.projectiles[i].ammo == 0)
                 {
                     // If there is collision with the photon.
-                    if (tir_x >= alien_x && tir_x <= alien_x + 16 && tir_y >= alien_y - 16 && tir_y <= alien_y + 16)
+                    if (projectile_x >= alien_x && projectile_x <= alien_x + 16 && projectile_y >= alien_y - 16 && projectile_y <= alien_y + 16)
                     {
                         // If there is collision marks this projectile for deletion (splice) during drawing.
                         this.ship.projectiles[i].collision = true;
@@ -234,18 +229,24 @@ export class Game {
                     }
                 }
                 
+                // TODO :
+                // Add more collision check given the weapon type?
+                
                 // Whenever collision is true for any of the above (in case we add more weapon types).
                 if (collision)
                 {
+                    // Lowers the durability of the alien ship given the ship weapon damage.
+                    this.aliens[j].durability -= this.ship.weapon.damage;
+                    
                     // Adding an explosion to the array and pressing the first frame of the explosion sprite.
                     this.explosions.push(new Explosion({x: alien_x, y: alien_y}));
                     
                     // Plays the sound effect and immetiately sets the sound cursor back to zero.
                     this.resources.sounds.explode.play();
                     this.resources.sounds.explode.currentTime = 0;
-
-                    this.score += this.aliens[j].score;
-                    this.aliens.splice(j, 1);
+                    
+                    // Splices the alien from the table and increments the score if destroyed.
+                    if (this.aliens[j].durability <= 0) { this.score += this.aliens[j].score; this.aliens.splice(j, 1); }
                 }
             }
         }
@@ -278,7 +279,7 @@ export class Game {
                 let new_y = -64 - (-32 * i);
                 
                 // Creates a new alien entity in the array.
-                this.aliens[k++] = new Alien({sprite: this.resources.images.alien, x: new_x, y: new_y, speed: MathUtils.random(25, 40)});
+                this.aliens[k++] = new Alien({sprite: this.resources.images.alien, x: new_x, y: new_y, speed: MathUtils.random(25, 40), durability: 15});
             }
         }
 
