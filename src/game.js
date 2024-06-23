@@ -1,5 +1,6 @@
 import { InputHandler } from './input-handler.js';
 import { ResourcesManager } from './resources-manager.js';
+import { AnimationManager } from './animation-manager.js';
 import { Ship } from './entities/ship.js';
 import { Alien } from './entities/alien.js';
 import { Explosion } from './entities/explosion.js';

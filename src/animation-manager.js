@@ -2,7 +2,7 @@
  * Class to handle animations.
  * Particularly useful for shared animations.
  */
-class AnimationManager {
+export class AnimationManager {
     constructor() {
         this.animations = [];
     }
