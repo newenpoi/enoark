@@ -7,10 +7,10 @@ export class Animation {
         // Frame duration in ms and last frame stored.
         this.frameDuration = config.duration || 120;
 
-        // Required for animation (not used yet).
+        // Required for animation.
         this.frame = config.frame || 0;
 
-        // Last frame saved.
+        // Last frame timestamp recorded.
         this.lastFrame = 0;
     }
     

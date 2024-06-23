@@ -61,6 +61,9 @@ export class Game {
         // Holds the HUD.
         this.hud = new HUD(this);
 
+        // The animation manager.
+        this.animation = new AnimationManager();
+
         // And the user interface (when pressing pause for now).
         // Ideally speaking we want new game, load game, and save.
     }
@@ -72,9 +75,6 @@ export class Game {
         
         // Initialize the input handler.
         this.inputs.initialize();
-
-        // Parameterize sounds and musics.
-        this.resources.initialize();
 
         // This function is used to place the aliens on the map.
         this.positioning();
