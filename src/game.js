@@ -170,7 +170,7 @@ export class Game {
         for (let i = 0; i < this.ship.projectiles.length; i++)
         {
             // Photons.
-            if (this.ship.projectiles[i].ammo == 0)
+            if (this.ship.projectiles[i].category == 0)
             {
                 // Draws the projectile given the coordinates being periodically updated inside ship.
                 DrawingUtils.draw_rectangle(this.ctx, this.ship.projectiles[i].x - 1, this.ship.projectiles[i].y - this.ship.weapon.speed, 2, 4, '#FFFFFF');
@@ -214,7 +214,7 @@ export class Game {
                 let collision = false;
                 
                 // Blasted by a photon.
-                if (this.ship.projectiles[i].ammo == 0)
+                if (this.ship.projectiles[i].category == 0)
                 {
                     // If there is collision with the photon.
                     if (projectile_x >= alien_x && projectile_x <= alien_x + 16 && projectile_y >= alien_y - 16 && projectile_y <= alien_y + 16)
@@ -222,7 +222,7 @@ export class Game {
                         // If there is collision marks this projectile for deletion (splice) during drawing.
                         this.ship.projectiles[i].collision = true;
                         
-                        // /!\ Cant splice there because otherwise projectiles[i].ammo will get undefined (ammo) at some point.
+                        // /!\ Cant splice there because otherwise projectiles[i].category will get undefined (category) at some point.
                         // this.ship.projectiles.splice(i, 1);
                         
                         collision = true;

@@ -81,7 +81,7 @@ export class Ship {
             this.projectiles.push(new Projectile({
                 x: (this.x + 16 / 2),
                 y: this.y,
-                ammo: this.weapon.type,
+                category: this.weapon.type,
                 collision: false
             }));
 
