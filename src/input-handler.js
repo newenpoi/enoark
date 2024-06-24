@@ -51,7 +51,7 @@ export class InputHandler {
         if (this.keyStates[80]) this.game.pause();
 
         // W (Swap Weapon).
-        if (this.keyStates[87]) this.ship.weapon.type = this.ship.weapon.type ? 0 : 1;
+        if (this.keyStates[87]) this.ship.weapon_swap();
     }
 
     cleanup() {

@@ -62,11 +62,12 @@ export class Game {
         // Holds the HUD.
         this.hud = new HUD(this);
 
-        // The animation manager.
-        this.animation = new AnimationManager();
+        // The animation manager (not used yet).
+        this.animanager = new AnimationManager();
 
         // And the user interface (when pressing pause for now).
         // Ideally speaking we want new game, load game, and save.
+        this.interface = new UserInterface();
     }
 
     /**
@@ -162,7 +163,6 @@ export class Game {
     /**
      * This method should be dedicated to drawing projectiles on the map.
      * /!\ Currently it only draw the projectiles from the player's ship.
-     * /!\ If the weapon is being swapped during drawing, and the new weapon has a different speed, it might affect projectiles, which is bad.
      */
     draw_shoot() {
         
@@ -175,13 +175,21 @@ export class Game {
                 // Draws the projectile given the coordinates being periodically updated inside ship.
                 DrawingUtils.draw_rectangle(this.ctx, this.ship.projectiles[i].x - 1, this.ship.projectiles[i].y - this.ship.weapon.speed, 2, 4, '#FFFFFF');
             }
+
+            // Beam.
+            // So drawing change given the weapon category?
+            if (this.ship.projectiles[i].category == 1)
+            {
+                // Adaptive calculation for the beam to give the illusion the ship fires an ion canon.
+                DrawingUtils.draw_rectangle(this.ctx, this.ship.projectiles[i].x - 1, 0, 2, (this.height - 32), 'cyan');
+
+                DrawingUtils.draw_arc(this.ctx, this.ship.x + 8, this.ship.y - 6, 4, 0, 2 * Math.PI, 'cyan');
+            }
         }
     }
 
     /**
      * It draws any explosion effects from an entity that has been vaporized.
-     * @param {*} delta 
-     * @param {*} timestamp 
      */
     draw_explosions() {
         
@@ -197,6 +205,7 @@ export class Game {
 
     /**
      * Performs collision check for incoming projectiles.
+     * Maybe another class should manage it.
      */
     collision_check() {
         // For every projectiles coming from the ship.
@@ -229,8 +238,15 @@ export class Game {
                     }
                 }
                 
-                // TODO :
-                // Add more collision check given the weapon type?
+                // Wrecked by ion canon beam.
+                if (this.ship.projectiles[i].category == 1)
+                {
+                    // Alien ship cannot be « behind » the ship to take damage.
+                    if (alien_y <= (this.ship.y + 32) && projectile_x >= alien_x && projectile_x <= alien_x + 16)
+                    {
+                        collision = true;
+                    }
+                }
                 
                 // Whenever collision is true for any of the above (in case we add more weapon types).
                 if (collision)

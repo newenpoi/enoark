@@ -61,6 +61,9 @@ export class Ship {
 
         // Updates the projectiles if any have been fired.
         for (let i = 0; i < this.projectiles.length; i++) {
+
+            // If the projectile is a beam, it disappears with time.
+            if (this.projectiles[i].category == 1) { this.projectiles.splice(i, 1); break; }
             
             // Adjusting trajectory.
             this.projectiles[i].y -= this.weapon.speed;
@@ -93,5 +96,15 @@ export class Ship {
             // Determine the last frame with the given timestamp.
             this.lastFrame = timestamp;
         }
+    }
+
+    /**
+     * In order to swap weapon from input handler key is pressed.
+     */
+    weapon_swap() {
+        console.log("Changing weapon...");
+        
+        if (this.weapon.type == 0) this.weapon = new Weapon({ type: 1, speed: 0, delay: 64, damage: 100 });
+        else this.weapon = new Weapon({ type: 0, speed: 4, delay: 128, damage: 10 });
     }
 }

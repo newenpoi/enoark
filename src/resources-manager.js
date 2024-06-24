@@ -19,6 +19,7 @@ export class ResourcesManager {
 
         this.sounds = {
             shoot: new Audio('/snd/shoot.wav'),
+            beam: new Audio('/snd/beam.wav'),
             explode: new Audio('/snd/explode.wav'),
             warning: new Audio('/cue/alert.ogg'),
             palier: new Audio('/cue/palier.ogg'),
