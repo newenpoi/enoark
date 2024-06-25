@@ -21,11 +21,12 @@ export class Ship {
         this.x = config.x || 0;
         this.y = config.y || 0;
         this.speed = config.speed || 150;
+        this.angle = 90;
         
         // Input being currently held.
         this.direction = config.direction || { left: false, right: false };
 
-        this.weapon = new Weapon(config.weapon) || new Weapon({ type: 0, speed: 4, delay: 128, damage: 10 });
+        this.weapon = config.weapon || new Weapon(0, 500, 128, 10, this);
         this.shooting = config.shooting || false;
         
         // A projectile array updated and rendered by the game loop.
@@ -37,6 +38,9 @@ export class Ship {
 
         // Required for animation (not used yet) at which frame this entity starts animating if animable.
         this.frame = config.frame || 0;
+
+        // Whether it allows collision.
+        this.collideable = true;
     }
 
     /**
@@ -59,42 +63,27 @@ export class Ship {
         if (this.direction.left) this.x -= (this.speed * delta);
         if (this.direction.right) this.x += (this.speed * delta);
 
-        // Updates the projectiles if any have been fired.
-        for (let i = 0; i < this.projectiles.length; i++) {
-
-            // If the projectile is a beam, it disappears with time.
-            if (this.projectiles[i].category == 1) { this.projectiles.splice(i, 1); break; }
-            
-            // Adjusting trajectory.
-            this.projectiles[i].y -= this.weapon.speed;
-            
-            // If the projectile is out of range or made collision.
-            if (this.projectiles[i].y <= 0 || this.projectiles[i].collision) this.projectiles.splice(i, 1);
-        }
-
         if (this.shooting) this.shoot(timestamp);
     }
 
     shoot(timestamp) {
 
-        // Calculation of projectile frequency using frame rate.
-        // Note that projectiles should be an entity of its own, and drawable.
+        // /!\ The frequency of shooting uses the timestamp.
         if (timestamp - this.lastFrame >= this.frameDuration) {
+
+            console.log("Firing...");
             
-            this.projectiles.push(new Projectile({
-                x: (this.x + 16 / 2),
-                y: this.y,
-                category: this.weapon.type,
-                collision: false
-            }));
+            this.game.projectiles.push(new Projectile((this.x + 16 / 2), this.y, this.weapon));
 
             // Plays the shoot sound.
-            // TODO : Should access static resources.
+            // /!\ Might consider accessing resources in a static way.
             this.game.resources.sounds.shoot.play();
             this.game.resources.sounds.shoot.currentTime = 0;
             
             // Determine the last frame with the given timestamp.
             this.lastFrame = timestamp;
+
+            console.log(this.game.projectiles);
         }
     }
 
@@ -104,7 +93,11 @@ export class Ship {
     weapon_swap() {
         console.log("Changing weapon...");
         
+        // We'll fix organizing stuff first.
+
+        /*
         if (this.weapon.type == 0) this.weapon = new Weapon({ type: 1, speed: 0, delay: 64, damage: 100 });
         else this.weapon = new Weapon({ type: 0, speed: 4, delay: 128, damage: 10 });
+        */
     }
 }

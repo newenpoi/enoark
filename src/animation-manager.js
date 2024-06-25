@@ -3,7 +3,7 @@
  * Particularly useful for shared animations.
  */
 export class AnimationManager {
-    constructor() {
+    constructor(game) {
         this.animations = [];
     }
 

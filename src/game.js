@@ -1,9 +1,9 @@
 import { InputHandler } from './input-handler.js';
 import { ResourcesManager } from './resources-manager.js';
 import { AnimationManager } from './animation-manager.js';
+import { CollisionHandler } from './collision-handler.js';
 import { Ship } from './entities/ship.js';
 import { Alien } from './entities/alien.js';
-import { Explosion } from './entities/explosion.js';
 import { HUD } from './hud.js';
 import { UserInterface } from './ui.js';
 import { MathUtils } from './utils/math-utils.js';
@@ -35,6 +35,9 @@ export class Game {
 
         // Bonuses that spawns from destroying enemy ships (not related to a map).
         this.bonuses = [];
+
+        // Holds projectiles to be updated and rendered.
+        this.projectiles = [];
         
         // Width and height of the canvas (~ like resolution of the game).
         this.width = this.canvas.width;
@@ -54,7 +57,7 @@ export class Game {
         this.resources = new ResourcesManager();
 
         // The player ship.
-        this.ship = new Ship({sprite: this.resources.images.ship, frame: 0, x: this.width / 2, y: (this.height - 16) - 8, speed: 150, direction: {left: false, right: false}, weapon: {type: 0, speed: 4, delay: 128, damage: 10}, shooting: false }, this);
+        this.ship = new Ship({sprite: this.resources.images.ship, frame: 0, x: this.width / 2, y: (this.height - 16) - 8, speed: 150, direction: {left: false, right: false}, shooting: false }, this);
 
         // Input handler.
         this.inputs = new InputHandler(this.ship, this);
@@ -63,7 +66,10 @@ export class Game {
         this.hud = new HUD(this);
 
         // The animation manager (not used yet).
-        this.animanager = new AnimationManager();
+        this.animanager = new AnimationManager(this);
+
+        // The collision manager.
+        this.collision_handler = new CollisionHandler(this);
 
         // And the user interface (when pressing pause for now).
         // Ideally speaking we want new game, load game, and save.
@@ -120,12 +126,30 @@ export class Game {
 
         // Updating game entities
         this.ship.update(delta, timestamp);
-        this.aliens.forEach(alien => alien.update(delta, timestamp));
+        
+        this.aliens.forEach((alien, index) => { 
+            alien.update(delta, timestamp);
+
+            // If the alien is out of boundaries.
+            if (alien.isOutOfBounds(this.height)) this.aliens.splice(index, 1);
+        });
+        
         this.explosions.forEach(explosion => explosion.update(delta, timestamp));
         this.hud.update();
 
-        // Checking for collisions
-        this.collision_check();
+        // Updates each projectiles.
+        this.projectiles.forEach((projectile, index) => {
+            projectile.update(delta);
+            
+            // Splices the projectile if its out of bounds (no need for height now).
+            if (projectile.isOutOfBounds(this.width)) this.projectiles.splice(index, 1);
+
+            // Removes the projectile if collided.
+            if (projectile.collision == true) this.projectiles.splice(index, 1);
+        });
+
+        // Performs collision verification for all collidable game objects.
+        this.collision_handler.perform();
     }
 
     /**
@@ -136,7 +160,7 @@ export class Game {
         
         this.draw_aliens();
         this.draw_ship();
-        this.draw_shoot();
+        this.draw_projectiles();
         this.draw_explosions();
 
         // Draws the user interface (holds another clearRect).
@@ -162,26 +186,25 @@ export class Game {
 
     /**
      * This method should be dedicated to drawing projectiles on the map.
-     * /!\ Currently it only draw the projectiles from the player's ship.
      */
-    draw_shoot() {
+    draw_projectiles() {
         
         // Loops through the projectiles and displays them.
-        for (let i = 0; i < this.ship.projectiles.length; i++)
+        for (let i = 0; i < this.projectiles.length; i++)
         {
             // Photons.
-            if (this.ship.projectiles[i].category == 0)
+            if (this.projectiles[i].type == 0)
             {
                 // Draws the projectile given the coordinates being periodically updated inside ship.
-                DrawingUtils.draw_rectangle(this.ctx, this.ship.projectiles[i].x - 1, this.ship.projectiles[i].y - this.ship.weapon.speed, 2, 4, '#FFFFFF');
+                DrawingUtils.draw_rectangle(this.ctx, this.projectiles[i].x - 1, this.projectiles[i].y, 2, 4, '#FFFFFF');
             }
 
             // Beam.
             // So drawing change given the weapon category?
-            if (this.ship.projectiles[i].category == 1)
+            if (this.projectiles[i].type == 1)
             {
                 // Adaptive calculation for the beam to give the illusion the ship fires an ion canon.
-                DrawingUtils.draw_rectangle(this.ctx, this.ship.projectiles[i].x - 1, 0, 2, (this.height - 32), 'cyan');
+                DrawingUtils.draw_rectangle(this.ctx, this.projectiles[i].x - 1, 0, 2, (this.height - 32), 'cyan');
 
                 DrawingUtils.draw_arc(this.ctx, this.ship.x + 8, this.ship.y - 6, 4, 0, 2 * Math.PI, 'cyan');
             }
@@ -204,74 +227,8 @@ export class Game {
     }
 
     /**
-     * Performs collision check for incoming projectiles.
-     * Maybe another class should manage it.
-     */
-    collision_check() {
-        // For every projectiles coming from the ship.
-        for (let i = 0; i < this.ship.projectiles.length; i++)
-        {
-            let projectile_x = this.ship.projectiles[i].x;
-            let projectile_y = this.ship.projectiles[i].y;
-            
-            // Loops through each aliens to check their position against the projectiles.
-            for (let j = 0; j < this.aliens.length; j++)
-            {
-                let alien_x = this.aliens[j].x;
-                let alien_y = this.aliens[j].y;
-                
-                let collision = false;
-                
-                // Blasted by a photon.
-                if (this.ship.projectiles[i].category == 0)
-                {
-                    // If there is collision with the photon.
-                    if (projectile_x >= alien_x && projectile_x <= alien_x + 16 && projectile_y >= alien_y - 16 && projectile_y <= alien_y + 16)
-                    {
-                        // If there is collision marks this projectile for deletion (splice) during drawing.
-                        this.ship.projectiles[i].collision = true;
-                        
-                        // /!\ Cant splice there because otherwise projectiles[i].category will get undefined (category) at some point.
-                        // this.ship.projectiles.splice(i, 1);
-                        
-                        collision = true;
-                    }
-                }
-                
-                // Wrecked by ion canon beam.
-                if (this.ship.projectiles[i].category == 1)
-                {
-                    // Alien ship cannot be « behind » the ship to take damage.
-                    if (alien_y <= (this.ship.y + 32) && projectile_x >= alien_x && projectile_x <= alien_x + 16)
-                    {
-                        collision = true;
-                    }
-                }
-                
-                // Whenever collision is true for any of the above (in case we add more weapon types).
-                if (collision)
-                {
-                    // Lowers the durability of the alien ship given the ship weapon damage.
-                    this.aliens[j].durability -= this.ship.weapon.damage;
-                    
-                    // Adding an explosion to the array and pressing the first frame of the explosion sprite.
-                    this.explosions.push(new Explosion({x: alien_x, y: alien_y}));
-                    
-                    // Plays the sound effect and immetiately sets the sound cursor back to zero.
-                    this.resources.sounds.explode.play();
-                    this.resources.sounds.explode.currentTime = 0;
-                    
-                    // Splices the alien from the table and increments the score if destroyed.
-                    if (this.aliens[j].durability <= 0) { this.score += this.aliens[j].score; this.aliens.splice(j, 1); }
-                }
-            }
-        }
-    }
-
-    /**
      * Pauses the game by freezing drawers.
      * The game loop will check for the running variable.
-     * TODO : Not being used yet.
      */
     pause() { this.running = !this.running; console.log(`The game is ${this.running ? "resumed" : "paused"}.`); }
 

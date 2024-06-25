@@ -23,6 +23,10 @@ export class Alien {
 
         // Maybe something like :
         this.animation = new Animation({entity: this, duration: this.frameDuration, frame: 0});
+
+        // Whether it allows collision.
+        // Could use @Collidable interface?
+        this.collideable = true;
     }
 
     /**
@@ -41,4 +45,6 @@ export class Alien {
         // We did already passed the concerned entity using this keyword though.
         this.animation.update(timestamp);
     }
+
+    isOutOfBounds(height) { return this.y > height; }
 }
