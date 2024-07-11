@@ -4,6 +4,7 @@ import { Animation } from './animation.js';
  * Class for the Alien entity.
  * @Drawable
  * @Animable
+ * @Collidable
  */
 export class Alien {
     
@@ -16,17 +17,18 @@ export class Alien {
         this.health = config.durability | 15;
         this.durability = config.durability | 15;
         
+        // Simulates speed at which this entity swaps between frame.
         this.frameDuration = 120;
         
         // Score when obliterating the alien.
         this.score = 1;
 
-        // Maybe something like :
+        // Simple animation class for our alien.
         this.animation = new Animation({entity: this, duration: this.frameDuration, frame: 0});
 
         // Whether it allows collision.
         // Could use @Collidable interface?
-        this.collideable = true;
+        this.collidable = true;
     }
 
     /**

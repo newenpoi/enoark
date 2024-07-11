@@ -1,5 +1,6 @@
 import { Weapon } from './weapon.js';
 import { Projectile } from './projectile.js';
+import { Animation } from './animation.js';
 
 /**
  * Class to create and provide a default ship.
@@ -28,19 +29,20 @@ export class Ship {
 
         this.weapon = config.weapon || new Weapon(0, 500, 128, 10, this);
         this.shooting = config.shooting || false;
+        this.lastShotTime = 0;
         
         // A projectile array updated and rendered by the game loop.
         this.projectiles = [];
 
-        // Frame duration in ms and last frame stored.
+        // Simulates speed at which this entity swaps between frame.
         this.frameDuration = 120;
-        this.lastFrame = 0;
 
-        // Required for animation (not used yet) at which frame this entity starts animating if animable.
-        this.frame = config.frame || 0;
+        // Simple animation class for our ship.
+        this.animation = new Animation({entity: this, duration: this.frameDuration, frame: 0});
 
         // Whether it allows collision.
-        this.collideable = true;
+        // Could use @Collidable interface?
+        this.collidable = true;
     }
 
     /**
@@ -63,35 +65,37 @@ export class Ship {
         if (this.direction.left) this.x -= (this.speed * delta);
         if (this.direction.right) this.x += (this.speed * delta);
 
-        if (this.shooting) this.shoot(timestamp);
+        // Fires projectile if this ship is currently shooting (based on the difference between the the last shot and the current timestamp).
+        if (this.shooting && (timestamp - this.lastShotTime) > this.weapon.delay) this.shoot(timestamp);
+
+        // Updating the animation.
+        // Now according to our current animation mechanism let's say the interval will change given the condition of the entity.
+        // The first thing I would think about is giving the animation object the health of the entity...
+        // We did already passed the concerned entity using 'this' keyword though.
+        this.animation.update(timestamp);
     }
 
     shoot(timestamp) {
 
-        // /!\ The frequency of shooting uses the timestamp.
-        if (timestamp - this.lastFrame >= this.frameDuration) {
+        this.game.projectiles.push(new Projectile((this.x + 16 / 2), this.y, this.weapon));
 
-            console.log("Firing...");
-            
-            this.game.projectiles.push(new Projectile((this.x + 16 / 2), this.y, this.weapon));
+        // Plays the shoot sound.
+        // /!\ Might consider accessing resources in a static way.
+        this.game.resources.sounds.shoot.play();
+        this.game.resources.sounds.shoot.currentTime = 0;
+        
+        // Determine the last frame with the given timestamp.
+        this.animation.lastFrame = timestamp;
 
-            // Plays the shoot sound.
-            // /!\ Might consider accessing resources in a static way.
-            this.game.resources.sounds.shoot.play();
-            this.game.resources.sounds.shoot.currentTime = 0;
-            
-            // Determine the last frame with the given timestamp.
-            this.lastFrame = timestamp;
-
-            console.log(this.game.projectiles);
-        }
+        // Sets the last shot time to the current timestamp.
+        this.lastShotTime = timestamp;
     }
 
     /**
      * In order to swap weapon from input handler key is pressed.
      */
     weapon_swap() {
-        console.log("Changing weapon...");
+        console.log("Swapping ship's weapon...");
         
         // We'll fix organizing stuff first.
 
